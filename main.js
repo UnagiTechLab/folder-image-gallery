@@ -175,16 +175,16 @@ var FolderImageGalleryPlugin = class extends import_obsidian.Plugin {
     await this.saveData(this.settings);
   }
   folderForCommand() {
-    var _a, _b, _c, _d, _e;
-    const active = (_b = (_a = document.activeElement) == null ? void 0 : _a.closest) == null ? void 0 : _b.call(_a, ".nav-folder-title, .nav-file-title");
+    var _a, _b, _c, _d;
+    const active = (_a = document.activeElement) == null ? void 0 : _a.closest(".nav-folder-title, .nav-file-title");
     const selected = document.querySelector(".nav-folder-title.is-active, .nav-file-title.is-active");
-    const path = (_c = active != null ? active : selected) == null ? void 0 : _c.getAttribute("data-path");
+    const path = (_b = active != null ? active : selected) == null ? void 0 : _b.getAttribute("data-path");
     if (path) {
       const abs = this.app.vault.getAbstractFileByPath(path);
       if (abs instanceof import_obsidian.TFolder) return abs;
       if (abs instanceof import_obsidian.TFile && abs.parent) return abs.parent;
     }
-    return (_e = (_d = this.app.workspace.getActiveFile()) == null ? void 0 : _d.parent) != null ? _e : null;
+    return (_d = (_c = this.app.workspace.getActiveFile()) == null ? void 0 : _c.parent) != null ? _d : null;
   }
   async openGallery(folder) {
     const leaf = this.app.workspace.getLeaf("tab");
@@ -197,7 +197,6 @@ var FolderImageGalleryPlugin = class extends import_obsidian.Plugin {
         sort: this.settings.sort
       }
     });
-    await this.app.workspace.revealLeaf(leaf);
   }
 };
 var GalleryView = class extends import_obsidian.ItemView {
@@ -267,16 +266,16 @@ var GalleryView = class extends import_obsidian.ItemView {
       content.createEl("p", { text: t("empty") });
       return;
     }
-    const grid = content.createEl("div", { cls: "fig-grid" });
+    const grid = content.createDiv({ cls: "fig-grid" });
     for (const item of collected.items) {
       this.drawCard(grid, item);
     }
   }
   drawToolbar(content, count, cappedNotes, cappedImages) {
-    const bar = content.createEl("div", { cls: "fig-toolbar" });
-    bar.createEl("div", { cls: "fig-title", text: this.folderPath || this.app.vault.getName() });
+    const bar = content.createDiv({ cls: "fig-toolbar" });
+    bar.createDiv({ cls: "fig-title", text: this.folderPath || this.app.vault.getName() });
     const extra = (cappedImages ? t("capped") : "") + (cappedNotes ? " " + t("notesCapped") : "");
-    bar.createEl("div", { cls: "fig-count", text: t("count")(count, extra) });
+    bar.createDiv({ cls: "fig-count", text: t("count")(count, extra) });
     const subLabel = bar.createEl("label", { cls: "fig-sub" });
     const checkbox = subLabel.createEl("input", { type: "checkbox" });
     checkbox.checked = this.includeSubfolders;
@@ -313,12 +312,12 @@ var GalleryView = class extends import_obsidian.ItemView {
       });
       modal.open();
     });
-    const meta = card.createEl("div", { cls: "fig-meta" });
-    meta.createEl("div", { cls: "fig-name", text: item.file.name });
+    const meta = card.createDiv({ cls: "fig-meta" });
+    meta.createDiv({ cls: "fig-name", text: item.file.name });
     if (item.sources.length === 0) {
-      meta.createEl("div", { cls: "fig-loose", text: t("loose") });
+      meta.createDiv({ cls: "fig-loose", text: t("loose") });
     } else {
-      const list = meta.createEl("div", { cls: "fig-sources" });
+      const list = meta.createDiv({ cls: "fig-sources" });
       for (const source of item.sources) {
         const link = list.createEl("a", { text: source.note.path, href: "#" });
         link.addEventListener("click", (event) => {
@@ -428,11 +427,11 @@ var ZoomModal = class extends import_obsidian.Modal {
     contentEl.createEl("img", {
       attr: { src: this.app.vault.getResourcePath(this.item.file), alt: this.item.file.name }
     });
-    contentEl.createEl("div", { cls: "fig-zoom-path", text: this.item.file.path });
-    const notes = contentEl.createEl("div", { cls: "fig-zoom-notes" });
-    notes.createEl("div", { cls: "fig-zoom-label", text: t("sources") });
+    contentEl.createDiv({ cls: "fig-zoom-path", text: this.item.file.path });
+    const notes = contentEl.createDiv({ cls: "fig-zoom-notes" });
+    notes.createDiv({ cls: "fig-zoom-label", text: t("sources") });
     if (this.item.sources.length === 0) {
-      notes.createEl("div", { text: t("loose") });
+      notes.createDiv({ text: t("loose") });
       return;
     }
     for (const source of this.item.sources) {

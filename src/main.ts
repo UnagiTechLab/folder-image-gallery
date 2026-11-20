@@ -164,8 +164,8 @@ export default class FolderImageGalleryPlugin extends Plugin {
   }
 
   folderForCommand(): TFolder | null {
-    const active = document.activeElement?.closest?.(".nav-folder-title, .nav-file-title") as HTMLElement | null;
-    const selected = document.querySelector(".nav-folder-title.is-active, .nav-file-title.is-active") as HTMLElement | null;
+    const active = document.activeElement?.closest(".nav-folder-title, .nav-file-title");
+    const selected = document.querySelector(".nav-folder-title.is-active, .nav-file-title.is-active");
     const path = (active ?? selected)?.getAttribute("data-path");
     if (path) {
       const abs = this.app.vault.getAbstractFileByPath(path);
@@ -186,7 +186,6 @@ export default class FolderImageGalleryPlugin extends Plugin {
         sort: this.settings.sort,
       },
     });
-    await this.app.workspace.revealLeaf(leaf);
   }
 }
 
@@ -273,17 +272,17 @@ class GalleryView extends ItemView {
       return;
     }
 
-    const grid = content.createEl("div", { cls: "fig-grid" });
+    const grid = content.createDiv({ cls: "fig-grid" });
     for (const item of collected.items) {
       this.drawCard(grid, item);
     }
   }
 
   private drawToolbar(content: HTMLElement, count: number, cappedNotes: boolean, cappedImages: boolean) {
-    const bar = content.createEl("div", { cls: "fig-toolbar" });
-    bar.createEl("div", { cls: "fig-title", text: this.folderPath || this.app.vault.getName() });
+    const bar = content.createDiv({ cls: "fig-toolbar" });
+    bar.createDiv({ cls: "fig-title", text: this.folderPath || this.app.vault.getName() });
     const extra = (cappedImages ? t("capped") : "") + (cappedNotes ? " " + t("notesCapped") : "");
-    bar.createEl("div", { cls: "fig-count", text: t("count")(count, extra) });
+    bar.createDiv({ cls: "fig-count", text: t("count")(count, extra) });
 
     const subLabel = bar.createEl("label", { cls: "fig-sub" });
     const checkbox = subLabel.createEl("input", { type: "checkbox" });
@@ -324,12 +323,12 @@ class GalleryView extends ItemView {
       modal.open();
     });
 
-    const meta = card.createEl("div", { cls: "fig-meta" });
-    meta.createEl("div", { cls: "fig-name", text: item.file.name });
+    const meta = card.createDiv({ cls: "fig-meta" });
+    meta.createDiv({ cls: "fig-name", text: item.file.name });
     if (item.sources.length === 0) {
-      meta.createEl("div", { cls: "fig-loose", text: t("loose") });
+      meta.createDiv({ cls: "fig-loose", text: t("loose") });
     } else {
-      const list = meta.createEl("div", { cls: "fig-sources" });
+      const list = meta.createDiv({ cls: "fig-sources" });
       for (const source of item.sources) {
         const link = list.createEl("a", { text: source.note.path, href: "#" });
         link.addEventListener("click", (event) => {
@@ -448,11 +447,11 @@ class ZoomModal extends Modal {
     contentEl.createEl("img", {
       attr: { src: this.app.vault.getResourcePath(this.item.file), alt: this.item.file.name },
     });
-    contentEl.createEl("div", { cls: "fig-zoom-path", text: this.item.file.path });
-    const notes = contentEl.createEl("div", { cls: "fig-zoom-notes" });
-    notes.createEl("div", { cls: "fig-zoom-label", text: t("sources") });
+    contentEl.createDiv({ cls: "fig-zoom-path", text: this.item.file.path });
+    const notes = contentEl.createDiv({ cls: "fig-zoom-notes" });
+    notes.createDiv({ cls: "fig-zoom-label", text: t("sources") });
     if (this.item.sources.length === 0) {
-      notes.createEl("div", { text: t("loose") });
+      notes.createDiv({ text: t("loose") });
       return;
     }
     for (const source of this.item.sources) {
