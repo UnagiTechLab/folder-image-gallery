@@ -1,0 +1,11 @@
+{
+  "id": "folder-image-gallery",
+  "name": "Folder Image Gallery",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "Open a folder as a gallery of its image files and the images linked from its notes.",
+  "author": "Maritea",
+  "authorUrl": "https://github.com/UnagiTechLab",
+  "fundingUrl": "https://ko-fi.com/unagitech",
+  "isDesktopOnly": false
+}

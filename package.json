@@ -1,0 +1,19 @@
+{
+  "name": "folder-image-gallery",
+  "version": "1.0.0",
+  "description": "Open a folder as a gallery of its image files and the images linked from its notes.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "test": "node esbuild.config.mjs test && node test/check.cjs"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "builtin-modules": "^3.3.0",
+    "esbuild": "0.25.0",
+    "obsidian": "latest",
+    "typescript": "5.7.2"
+  }
+}

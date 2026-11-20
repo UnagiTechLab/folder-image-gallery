@@ -1,0 +1,5 @@
+node_modules/
+test/check.cjs
+data.json
+.DS_Store
+Thumbs.db
