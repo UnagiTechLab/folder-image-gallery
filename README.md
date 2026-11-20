@@ -10,6 +10,8 @@ An Obsidian plugin that shows the images in a folder as a gallery.
 
 Besides the image files in the folder, it also shows images that the folder's notes embed or link to. Images are shown even when the files live somewhere else, such as an attachments folder. A duplicate image is shown only once.
 
+![The gallery tab for the Reports folder](images/gallery.png)
+
 ## Features
 
 - **Open from a folder**: right-click a folder in the file explorer and choose **Open image gallery**. The gallery opens in a new tab.
@@ -19,6 +21,16 @@ Besides the image files in the folder, it also shows images that the folder's no
 - **Zoom and jump to notes**: click a thumbnail to enlarge it. Each image lists the notes that use it. Click one to open that note.
 - **Sorting**: sort by updated time, name, or note order.
 - **Supports English and Japanese**: follows Obsidian's language setting.
+
+## Screenshots
+
+Right-click a folder and choose **Open image gallery**.
+
+![The folder menu with Open image gallery](images/menu.png)
+
+Click a thumbnail to enlarge it. The notes that use the image are listed below it.
+
+![An enlarged image with the notes that use it](images/zoom.png)
 
 ## Settings
 

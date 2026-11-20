@@ -225,7 +225,15 @@ class GalleryView extends ItemView {
     if (state && typeof state.includeSubfolders === "boolean") this.includeSubfolders = state.includeSubfolders;
     if (state && (state.sort === "mtime" || state.sort === "name" || state.sort === "note")) this.sort = state.sort;
     await super.setState(state, result);
+    this.refreshHeader();
     await this.render();
+  }
+
+  // The view header title is drawn when the view opens, before the folder is known,
+  // so it shows the vault name. Set it to the folder name once the state arrives.
+  private refreshHeader() {
+    const title = this.containerEl.querySelector(".view-header-title");
+    if (title instanceof HTMLElement) title.setText(this.getDisplayText());
   }
 
   async onOpen() {
