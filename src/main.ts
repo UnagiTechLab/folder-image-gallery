@@ -40,16 +40,19 @@ interface GalleryState {
   folderPath: string;
   includeSubfolders: boolean;
   sort: SortKey;
+  imagesOnly: boolean;
 }
 
 interface GallerySettings {
   includeSubfolders: boolean;
   sort: SortKey;
+  imagesOnly: boolean;
 }
 
 const DEFAULT_SETTINGS: GallerySettings = {
   includeSubfolders: true,
   sort: "mtime",
+  imagesOnly: false,
 };
 
 const STRINGS = {
@@ -64,6 +67,7 @@ const STRINGS = {
     capped: " (showing the first 600)",
     notesCapped: "Some notes were skipped (more than 800).",
     sub: "Include subfolders",
+    imagesOnly: "Images only",
     sort_mtime: "Updated",
     sort_name: "Name",
     sort_note: "Note order",
@@ -74,6 +78,9 @@ const STRINGS = {
     settingSubDesc: "When a gallery opens, also include folders inside the selected folder.",
     settingSort: "Sort",
     settingSortDesc: "Order used when a gallery opens. You can change it in the gallery tab.",
+    settingImagesOnly: "Images only",
+    settingImagesOnlyDesc:
+      "When a gallery opens, hide file names and note links under each thumbnail. You can change it in the gallery tab.",
   },
   ja: {
     command: "このフォルダの画像ギャラリーを開く",
@@ -86,6 +93,7 @@ const STRINGS = {
     capped: "（先頭 600 枚を表示）",
     notesCapped: "ノートが 800 を超えたため、一部は見ていません。",
     sub: "サブフォルダを含む",
+    imagesOnly: "画像のみ",
     sort_mtime: "更新日時",
     sort_name: "名前",
     sort_note: "ノート順",
@@ -96,6 +104,9 @@ const STRINGS = {
     settingSubDesc: "ギャラリーを開いたとき、選んだフォルダの中のフォルダも含めます。",
     settingSort: "並び順",
     settingSortDesc: "ギャラリーを開いたときの並び順です。タブの中でも変えられます。",
+    settingImagesOnly: "画像のみ",
+    settingImagesOnlyDesc:
+      "ギャラリーを開いたとき、各サムネイル下のファイル名とノートへのリンクを隠します。タブの中でも変えられます。",
   },
 } as const;
 
@@ -184,6 +195,7 @@ export default class FolderImageGalleryPlugin extends Plugin {
         folderPath: folder.path,
         includeSubfolders: this.settings.includeSubfolders,
         sort: this.settings.sort,
+        imagesOnly: this.settings.imagesOnly,
       },
     });
   }
@@ -193,6 +205,7 @@ class GalleryView extends ItemView {
   private folderPath = "";
   private includeSubfolders = true;
   private sort: SortKey = "mtime";
+  private imagesOnly = false;
   private renderToken = 0;
 
   constructor(leaf: WorkspaceLeaf, private plugin: FolderImageGalleryPlugin) {
@@ -216,6 +229,7 @@ class GalleryView extends ItemView {
       folderPath: this.folderPath,
       includeSubfolders: this.includeSubfolders,
       sort: this.sort,
+      imagesOnly: this.imagesOnly,
     };
   }
 
@@ -223,6 +237,7 @@ class GalleryView extends ItemView {
     if (state && typeof state.folderPath === "string") this.folderPath = state.folderPath;
     if (state && typeof state.includeSubfolders === "boolean") this.includeSubfolders = state.includeSubfolders;
     if (state && (state.sort === "mtime" || state.sort === "name" || state.sort === "note")) this.sort = state.sort;
+    if (state && typeof state.imagesOnly === "boolean") this.imagesOnly = state.imagesOnly;
     await super.setState(state, result);
     this.refreshHeader();
     await this.render();
@@ -249,6 +264,7 @@ class GalleryView extends ItemView {
     const content = this.contentEl;
     content.empty();
     content.addClass("fig-root");
+    content.toggleClass("fig-images-only", this.imagesOnly);
     content.createEl("p", { text: t("loading"), cls: "fig-loading" });
 
     const folder = this.folderPath
@@ -256,6 +272,8 @@ class GalleryView extends ItemView {
       : this.app.vault.getRoot();
     if (!(folder instanceof TFolder)) {
       content.empty();
+      content.addClass("fig-root");
+      content.toggleClass("fig-images-only", this.imagesOnly);
       content.createEl("p", { text: t("missing") });
       return;
     }
@@ -265,6 +283,7 @@ class GalleryView extends ItemView {
 
     content.empty();
     content.addClass("fig-root");
+    content.toggleClass("fig-images-only", this.imagesOnly);
     this.drawToolbar(content, collected.items.length, collected.cappedNotes, collected.cappedImages);
 
     if (collected.items.length === 0) {
@@ -294,6 +313,16 @@ class GalleryView extends ItemView {
       void this.render();
     });
 
+    const imagesOnlyLabel = bar.createEl("label", { cls: "fig-sub" });
+    const imagesOnlyCheckbox = imagesOnlyLabel.createEl("input", { type: "checkbox" });
+    imagesOnlyCheckbox.checked = this.imagesOnly;
+    imagesOnlyLabel.appendText(" " + t("imagesOnly"));
+    imagesOnlyCheckbox.addEventListener("change", () => {
+      this.imagesOnly = imagesOnlyCheckbox.checked;
+      this.app.workspace.requestSaveLayout();
+      void this.render();
+    });
+
     const select = bar.createEl("select", { cls: "fig-sort" });
     for (const key of ["mtime", "name", "note"] as const) {
       const option = select.createEl("option", { text: t(`sort_${key}`), value: key });
@@ -314,6 +343,7 @@ class GalleryView extends ItemView {
         src: this.app.vault.getResourcePath(item.file),
         alt: item.file.name,
         loading: "lazy",
+        title: item.file.name,
       },
     });
     img.addEventListener("click", () => {
@@ -322,6 +352,8 @@ class GalleryView extends ItemView {
       });
       modal.open();
     });
+
+    if (this.imagesOnly) return;
 
     const meta = card.createDiv({ cls: "fig-meta" });
     meta.createDiv({ cls: "fig-name", text: item.file.name });
@@ -474,6 +506,36 @@ class GallerySettingTab extends PluginSettingTab {
     super(app, plugin);
   }
 
+  // Obsidian 1.13+: used for the settings UI and settings search. Skips display().
+  getSettingDefinitions() {
+    return [
+      {
+        name: t("settingSub"),
+        desc: t("settingSubDesc"),
+        control: { type: "toggle" as const, key: "includeSubfolders" },
+      },
+      {
+        name: t("settingSort"),
+        desc: t("settingSortDesc"),
+        control: {
+          type: "dropdown" as const,
+          key: "sort",
+          options: {
+            mtime: t("sort_mtime"),
+            name: t("sort_name"),
+            note: t("sort_note"),
+          },
+        },
+      },
+      {
+        name: t("settingImagesOnly"),
+        desc: t("settingImagesOnlyDesc"),
+        control: { type: "toggle" as const, key: "imagesOnly" },
+      },
+    ];
+  }
+
+  // Obsidian < 1.13: framework still calls display().
   display() {
     const { containerEl } = this;
     containerEl.empty();
@@ -502,6 +564,16 @@ class GallerySettingTab extends PluginSettingTab {
               await this.plugin.saveSettings();
             }
           })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settingImagesOnly"))
+      .setDesc(t("settingImagesOnlyDesc"))
+      .addToggle((toggle) =>
+        toggle.setValue(this.plugin.settings.imagesOnly).onChange(async (value) => {
+          this.plugin.settings.imagesOnly = value;
+          await this.plugin.saveSettings();
+        })
       );
   }
 }

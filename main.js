@@ -71,7 +71,8 @@ var MAX_NOTES = 800;
 var MAX_IMAGES = 600;
 var DEFAULT_SETTINGS = {
   includeSubfolders: true,
-  sort: "mtime"
+  sort: "mtime",
+  imagesOnly: false
 };
 var STRINGS = {
   en: {
@@ -85,6 +86,7 @@ var STRINGS = {
     capped: " (showing the first 600)",
     notesCapped: "Some notes were skipped (more than 800).",
     sub: "Include subfolders",
+    imagesOnly: "Images only",
     sort_mtime: "Updated",
     sort_name: "Name",
     sort_note: "Note order",
@@ -94,7 +96,9 @@ var STRINGS = {
     settingSub: "Include subfolders",
     settingSubDesc: "When a gallery opens, also include folders inside the selected folder.",
     settingSort: "Sort",
-    settingSortDesc: "Order used when a gallery opens. You can change it in the gallery tab."
+    settingSortDesc: "Order used when a gallery opens. You can change it in the gallery tab.",
+    settingImagesOnly: "Images only",
+    settingImagesOnlyDesc: "When a gallery opens, hide file names and note links under each thumbnail. You can change it in the gallery tab."
   },
   ja: {
     command: "\u3053\u306E\u30D5\u30A9\u30EB\u30C0\u306E\u753B\u50CF\u30AE\u30E3\u30E9\u30EA\u30FC\u3092\u958B\u304F",
@@ -107,6 +111,7 @@ var STRINGS = {
     capped: "\uFF08\u5148\u982D 600 \u679A\u3092\u8868\u793A\uFF09",
     notesCapped: "\u30CE\u30FC\u30C8\u304C 800 \u3092\u8D85\u3048\u305F\u305F\u3081\u3001\u4E00\u90E8\u306F\u898B\u3066\u3044\u307E\u305B\u3093\u3002",
     sub: "\u30B5\u30D6\u30D5\u30A9\u30EB\u30C0\u3092\u542B\u3080",
+    imagesOnly: "\u753B\u50CF\u306E\u307F",
     sort_mtime: "\u66F4\u65B0\u65E5\u6642",
     sort_name: "\u540D\u524D",
     sort_note: "\u30CE\u30FC\u30C8\u9806",
@@ -116,7 +121,9 @@ var STRINGS = {
     settingSub: "\u30B5\u30D6\u30D5\u30A9\u30EB\u30C0\u3092\u542B\u3080",
     settingSubDesc: "\u30AE\u30E3\u30E9\u30EA\u30FC\u3092\u958B\u3044\u305F\u3068\u304D\u3001\u9078\u3093\u3060\u30D5\u30A9\u30EB\u30C0\u306E\u4E2D\u306E\u30D5\u30A9\u30EB\u30C0\u3082\u542B\u3081\u307E\u3059\u3002",
     settingSort: "\u4E26\u3073\u9806",
-    settingSortDesc: "\u30AE\u30E3\u30E9\u30EA\u30FC\u3092\u958B\u3044\u305F\u3068\u304D\u306E\u4E26\u3073\u9806\u3067\u3059\u3002\u30BF\u30D6\u306E\u4E2D\u3067\u3082\u5909\u3048\u3089\u308C\u307E\u3059\u3002"
+    settingSortDesc: "\u30AE\u30E3\u30E9\u30EA\u30FC\u3092\u958B\u3044\u305F\u3068\u304D\u306E\u4E26\u3073\u9806\u3067\u3059\u3002\u30BF\u30D6\u306E\u4E2D\u3067\u3082\u5909\u3048\u3089\u308C\u307E\u3059\u3002",
+    settingImagesOnly: "\u753B\u50CF\u306E\u307F",
+    settingImagesOnlyDesc: "\u30AE\u30E3\u30E9\u30EA\u30FC\u3092\u958B\u3044\u305F\u3068\u304D\u3001\u5404\u30B5\u30E0\u30CD\u30A4\u30EB\u4E0B\u306E\u30D5\u30A1\u30A4\u30EB\u540D\u3068\u30CE\u30FC\u30C8\u3078\u306E\u30EA\u30F3\u30AF\u3092\u96A0\u3057\u307E\u3059\u3002\u30BF\u30D6\u306E\u4E2D\u3067\u3082\u5909\u3048\u3089\u308C\u307E\u3059\u3002"
   }
 };
 function lang() {
@@ -194,7 +201,8 @@ var FolderImageGalleryPlugin = class extends import_obsidian.Plugin {
       state: {
         folderPath: folder.path,
         includeSubfolders: this.settings.includeSubfolders,
-        sort: this.settings.sort
+        sort: this.settings.sort,
+        imagesOnly: this.settings.imagesOnly
       }
     });
   }
@@ -206,6 +214,7 @@ var GalleryView = class extends import_obsidian.ItemView {
     this.folderPath = "";
     this.includeSubfolders = true;
     this.sort = "mtime";
+    this.imagesOnly = false;
     this.renderToken = 0;
   }
   getViewType() {
@@ -221,13 +230,15 @@ var GalleryView = class extends import_obsidian.ItemView {
     return {
       folderPath: this.folderPath,
       includeSubfolders: this.includeSubfolders,
-      sort: this.sort
+      sort: this.sort,
+      imagesOnly: this.imagesOnly
     };
   }
   async setState(state, result) {
     if (state && typeof state.folderPath === "string") this.folderPath = state.folderPath;
     if (state && typeof state.includeSubfolders === "boolean") this.includeSubfolders = state.includeSubfolders;
     if (state && (state.sort === "mtime" || state.sort === "name" || state.sort === "note")) this.sort = state.sort;
+    if (state && typeof state.imagesOnly === "boolean") this.imagesOnly = state.imagesOnly;
     await super.setState(state, result);
     this.refreshHeader();
     await this.render();
@@ -250,10 +261,13 @@ var GalleryView = class extends import_obsidian.ItemView {
     const content = this.contentEl;
     content.empty();
     content.addClass("fig-root");
+    content.toggleClass("fig-images-only", this.imagesOnly);
     content.createEl("p", { text: t("loading"), cls: "fig-loading" });
     const folder = this.folderPath ? this.app.vault.getAbstractFileByPath(this.folderPath) : this.app.vault.getRoot();
     if (!(folder instanceof import_obsidian.TFolder)) {
       content.empty();
+      content.addClass("fig-root");
+      content.toggleClass("fig-images-only", this.imagesOnly);
       content.createEl("p", { text: t("missing") });
       return;
     }
@@ -261,6 +275,7 @@ var GalleryView = class extends import_obsidian.ItemView {
     if (token !== this.renderToken) return;
     content.empty();
     content.addClass("fig-root");
+    content.toggleClass("fig-images-only", this.imagesOnly);
     this.drawToolbar(content, collected.items.length, collected.cappedNotes, collected.cappedImages);
     if (collected.items.length === 0) {
       content.createEl("p", { text: t("empty") });
@@ -285,6 +300,15 @@ var GalleryView = class extends import_obsidian.ItemView {
       this.app.workspace.requestSaveLayout();
       void this.render();
     });
+    const imagesOnlyLabel = bar.createEl("label", { cls: "fig-sub" });
+    const imagesOnlyCheckbox = imagesOnlyLabel.createEl("input", { type: "checkbox" });
+    imagesOnlyCheckbox.checked = this.imagesOnly;
+    imagesOnlyLabel.appendText(" " + t("imagesOnly"));
+    imagesOnlyCheckbox.addEventListener("change", () => {
+      this.imagesOnly = imagesOnlyCheckbox.checked;
+      this.app.workspace.requestSaveLayout();
+      void this.render();
+    });
     const select = bar.createEl("select", { cls: "fig-sort" });
     for (const key of ["mtime", "name", "note"]) {
       const option = select.createEl("option", { text: t(`sort_${key}`), value: key });
@@ -303,7 +327,8 @@ var GalleryView = class extends import_obsidian.ItemView {
       attr: {
         src: this.app.vault.getResourcePath(item.file),
         alt: item.file.name,
-        loading: "lazy"
+        loading: "lazy",
+        title: item.file.name
       }
     });
     img.addEventListener("click", () => {
@@ -312,6 +337,7 @@ var GalleryView = class extends import_obsidian.ItemView {
       });
       modal.open();
     });
+    if (this.imagesOnly) return;
     const meta = card.createDiv({ cls: "fig-meta" });
     meta.createDiv({ cls: "fig-name", text: item.file.name });
     if (item.sources.length === 0) {
@@ -452,6 +478,35 @@ var GallerySettingTab = class extends import_obsidian.PluginSettingTab {
     super(app, plugin);
     this.plugin = plugin;
   }
+  // Obsidian 1.13+: used for the settings UI and settings search. Skips display().
+  getSettingDefinitions() {
+    return [
+      {
+        name: t("settingSub"),
+        desc: t("settingSubDesc"),
+        control: { type: "toggle", key: "includeSubfolders" }
+      },
+      {
+        name: t("settingSort"),
+        desc: t("settingSortDesc"),
+        control: {
+          type: "dropdown",
+          key: "sort",
+          options: {
+            mtime: t("sort_mtime"),
+            name: t("sort_name"),
+            note: t("sort_note")
+          }
+        }
+      },
+      {
+        name: t("settingImagesOnly"),
+        desc: t("settingImagesOnlyDesc"),
+        control: { type: "toggle", key: "imagesOnly" }
+      }
+    ];
+  }
+  // Obsidian < 1.13: framework still calls display().
   display() {
     const { containerEl } = this;
     containerEl.empty();
@@ -467,6 +522,12 @@ var GallerySettingTab = class extends import_obsidian.PluginSettingTab {
           this.plugin.settings.sort = value;
           await this.plugin.saveSettings();
         }
+      })
+    );
+    new import_obsidian.Setting(containerEl).setName(t("settingImagesOnly")).setDesc(t("settingImagesOnlyDesc")).addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.imagesOnly).onChange(async (value) => {
+        this.plugin.settings.imagesOnly = value;
+        await this.plugin.saveSettings();
       })
     );
   }

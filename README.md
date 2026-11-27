@@ -18,6 +18,7 @@ Besides the image files in the folder, it also shows images that the folder's no
 - **Open from a command**: use the command **Open image gallery for this folder**. It uses the folder selected in the file explorer, or the folder of the open note.
 - **Images from notes, too**: image files in the folder and images embedded or linked in its notes are shown together.
 - **Subfolders on or off**: choose in the gallery tab whether to include subfolders.
+- **Images only**: hide file names and note links under thumbnails, so the grid shows images alone. Toggle it in the gallery tab.
 - **Zoom and jump to notes**: click a thumbnail to enlarge it. Each image lists the notes that use it. Click one to open that note.
 - **Sorting**: sort by updated time, name, or note order.
 - **Supports English and Japanese**: follows Obsidian's language setting.
@@ -37,6 +38,7 @@ Click a thumbnail to enlarge it. The notes that use the image are listed below i
 | Setting | Default | What it does |
 |---|---|---|
 | Include subfolders | On | When a gallery opens, also include images in folders inside the selected folder. |
+| Images only | Off | When a gallery opens, hide file names and note links under each thumbnail. You can also change it in the gallery tab. |
 | Sort | Updated | Order used when a gallery opens. You can also change it in the gallery tab. |
 
 ## Install

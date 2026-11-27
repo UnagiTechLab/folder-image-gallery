@@ -1,6 +1,6 @@
 {
   "name": "folder-image-gallery",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Open a folder as a gallery of its image files and the images linked from its notes.",
   "main": "main.js",
   "scripts": {
